@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import 'package:image/image.dart' as img;
 import '../data/api/api_service.dart';
@@ -12,10 +13,13 @@ class UploadProvider extends ChangeNotifier {
 
   String? imagePath;
   XFile? imageFile;
+  LatLng? _currLatLon;
 
   bool isUploading = false;
   String message = "";
   UploadResponse? uploadResponse;
+
+  LatLng? get currLatLon => _currLatLon;
 
   void setImagePath(String? value) {
     imagePath = value;
@@ -33,6 +37,8 @@ class UploadProvider extends ChangeNotifier {
       List<int> bytes,
       String fileName,
       String description,
+      {double lat = 0.0,
+        double lon = 0.0,}
       )
   async {
     try {
@@ -41,7 +47,7 @@ class UploadProvider extends ChangeNotifier {
       isUploading = true;
       notifyListeners();
 
-      uploadResponse = await apiService.uploadDocument(bytes, fileName, description);
+      uploadResponse = await apiService.uploadDocument(bytes, fileName, description, lat, lon);
       message = uploadResponse?.message ?? "success";
       isUploading = false;
       notifyListeners();

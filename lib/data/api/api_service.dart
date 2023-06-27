@@ -95,6 +95,8 @@ class ApiService {
       List<int> bytes,
       String fileName,
       String description,
+      [double lat = 0.0,
+        double lon = 0.0,]
       ) async {
     const String url = storyUpload;
 
@@ -108,6 +110,8 @@ class ApiService {
     );
     final Map<String, String> fields = {
       "description": description,
+      "lat": lat.toString(),
+      "lon": lon.toString(),
     };
     final Map<String, String> headers = {
       "Accept": "application/json",
@@ -134,10 +138,10 @@ class ApiService {
       throw Exception("Upload file error");
     }
   }
-  
+
 
   Future<StoryResponse> getStoriesList(
-      [int page = 1, int size = 20, int location = 0]) async {
+      [int page = 1, int size = 20, int location = 1]) async {
     try {
       var url = '$storyGetStory?page=$page&size=$size&location=$location';
       debugPrint("list stories API GET: $url");

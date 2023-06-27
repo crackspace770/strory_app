@@ -4,7 +4,6 @@ import 'dart:convert';
 class StoryResponse {
   bool error;
   String message;
-
   List<ListStory>? listStory;
 
   StoryResponse({
@@ -36,6 +35,8 @@ class ListStory {
   String description;
   String photoUrl;
   DateTime createdAt;
+  double lat;
+  double lon;
 
 
   ListStory({
@@ -44,7 +45,8 @@ class ListStory {
     required this.description,
     required this.photoUrl,
     required this.createdAt,
-
+    required this.lat,
+    required this.lon,
   });
 
   factory ListStory.fromRawJson(String str) => ListStory.fromJson(json.decode(str));
@@ -57,7 +59,8 @@ class ListStory {
     description: json["description"],
     photoUrl: json["photoUrl"],
     createdAt: DateTime.parse(json["createdAt"]),
-
+    lat: json["lat"]?.toDouble(),
+    lon: json["lon"]?.toDouble(),
   );
 
   Map<String, dynamic> toJson() => {
@@ -66,6 +69,7 @@ class ListStory {
     "description": description,
     "photoUrl": photoUrl,
     "createdAt": createdAt.toIso8601String(),
-
+    "lat": lat,
+    "lon": lon,
   };
 }

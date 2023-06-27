@@ -1,19 +1,19 @@
 
 import 'package:flutter/material.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
-
 import '../data/response/story_response.dart';
 import '../provider/auth_provider.dart';
 import '../provider/story_provider.dart';
+import '../utils/style.dart';
 import '../widget/card_story.dart';
 
 class StoryListPage extends StatefulWidget {
+
   final Function() onLogout;
   final Function(ListStory) onTapped;
   final List<ListStory>? provider;
   final Function() onPressed;
-  final PagingController<int, StoryResponse> storyPagingController;
+
 
   const StoryListPage({
     Key? key,
@@ -21,7 +21,6 @@ class StoryListPage extends StatefulWidget {
     required this.onTapped,
     required this.onPressed,
     this.provider,
-    required this.storyPagingController,
   }) : super(key: key);
 
   @override
@@ -30,15 +29,10 @@ class StoryListPage extends StatefulWidget {
 
 class _StoryListPageState extends State<StoryListPage> {
 
-
-  static const _pageSize = 20;
-  int _pageKey = 0;
-
-
-  Future<dynamic> _onRefresh() async {
+  Future<void> _onRefresh() async {
     Provider.of<StoryProvider>(
       context,
-        listen: false
+      listen: false,
     ).fetchStory();
   }
 
@@ -79,11 +73,11 @@ class _StoryListPageState extends State<StoryListPage> {
       ),
       body: SafeArea(
         child: RefreshIndicator(
+        //  backgroundColor: secondaryColor,
           onRefresh: _onRefresh,
           child: _buildList(),
         ),
       ),
-
       floatingActionButton: FloatingActionButton(
         child: const Icon(Icons.add_circle_outline),
         onPressed: () => widget.onPressed(
@@ -101,15 +95,13 @@ class _StoryListPageState extends State<StoryListPage> {
             child: CircularProgressIndicator(
               backgroundColor: Colors.lightBlue,
             ),
-
           );
-
         }
         if (provider.state == ResultState.error) {
           return Center(
             child: Material(
               child: Text(
-                  provider.storiesResults?.message ?? 'Something wrong, please check your connection',
+                provider.storiesResults?.message ?? 'Something wrong, please check your connection',
               ),
             ),
 
@@ -118,26 +110,19 @@ class _StoryListPageState extends State<StoryListPage> {
         if (provider.state == ResultState.hasData) {
           return Stack(
             children: [
-              RefreshIndicator(
-                onRefresh: () async {
-                  _pageKey = 0;
-                  widget.storyPagingController.refresh();
+              ListView.builder(
+                controller: provider.scrollController,
+                itemCount: provider.storiesResults?.listStory!.length,
+                itemBuilder: (context, index) {
+                  var stories = provider.storiesResults.listStory![index];
+                  return GestureDetector(
+                    onTap: () => widget.onTapped(stories),
+                    child: CardStory(
+                        story: stories
+                    ),
+                  );
                 },
-                child: ListView.builder(
-                  controller: provider.scrollController,
-                  itemCount: provider.listStory.length,
-                  itemBuilder: (context, index) {
-                    var stories = provider.listStory;
-                    return GestureDetector(
-                      onTap: () => widget.onTapped(stories[index]),
-                      child: CardStory(
-                        story: stories[index],
-                      ),
-                    );
-                  },
-                ),
               ),
-
               const SizedBox(
                 height: 30,
               ),

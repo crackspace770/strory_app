@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import '../data/api/api_service.dart';
 import '../data/response/story_response.dart';
@@ -13,29 +15,33 @@ class StoryProvider extends ChangeNotifier {
   final ApiService apiService;
 
   StoryProvider({required this.apiService}) {
-    _setControllerListener();
     fetchStory();
+     _setControllerListener();
   }
 
   bool isLoading = false;
 
-  final int _currentSize = 10;
-  int _currentPage = 1;
-  bool _hasReachedMax = false;
-  bool _isScrollLoading = false;
+  late StoryResponse _storyResult;
+  late ResultState _state;
+  String _message = '';
+  String get message => _message;
+  StoryResponse get result => _storyResult;
+  StoryResponse get storiesResults => _storyResult;
+  ResultState get state => _state;
 
-  ResultState state = ResultState.initial;
-
-  StoryResponse? _storiesResults;
   final List<ListStory> _listStory = [];
-
-  StoryResponse? get storiesResults => _storiesResults;
-
   List<ListStory> get listStory => _listStory;
 
-  ScrollController get scrollController => _scrollController;
+  bool _hasReachedMax = false;
+  final int _currentSize = 10;
+  int _currentPage = 1;
+  bool _isScrollLoading = false;
 
+  ScrollController get scrollController => _scrollController;
   bool get isScrollLoading => _isScrollLoading;
+  final ScrollController _scrollController = ScrollController();
+
+//  get listStory => null;
 
   @override
   void dispose() {
@@ -43,51 +49,41 @@ class StoryProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  final ScrollController _scrollController = ScrollController();
-
   Future<void> fetchStory() async {
     try {
       if (_listStory.isEmpty) {
-        state = ResultState.loading;
+        _state = ResultState.loading;
       } else {
         _isScrollLoading = true;
       }
       notifyListeners();
 
-      _storiesResults = await apiService.getStoriesList(_currentPage, _currentSize);
-      if (_storiesResults!.listStory!.isNotEmpty) {
-        _listStory.addAll(_storiesResults?.listStory ?? []);
-        state = ResultState.hasData;
+      _storyResult = await apiService.getStoriesList(_currentPage, _currentSize);
+      if (_storyResult!.listStory!.isEmpty) {
+        _listStory.addAll(_storyResult!.listStory ?? []);
+        _state = ResultState.hasData;
       } else {
         if (_listStory.isEmpty) {
-          state = ResultState.noData;
+          _state = ResultState.noData;
         } else {
-          state = ResultState.hasData;
+          _state = ResultState.hasData;
           _hasReachedMax = true;
         }
       }
-      state = ResultState.hasData;
 
+      _state = ResultState.hasData;
       if (_isScrollLoading) {
         _isScrollLoading = false;
       }
-
       notifyListeners();
+
     } catch (e) {
       isLoading = false;
-      state = ResultState.error;
+      _state = ResultState.error;
       notifyListeners();
       throw Exception('Error fetch list API : $e');
     }
   }
-
-  Future<void> refreshData() async {
-    _listStory.clear();
-    _currentPage = 1;
-    _hasReachedMax = false;
-    await fetchStory();
-  }
-
 
   void _setControllerListener() {
     _scrollController.addListener(() {
@@ -100,6 +96,5 @@ class StoryProvider extends ChangeNotifier {
       }
     });
   }
-
 
 }

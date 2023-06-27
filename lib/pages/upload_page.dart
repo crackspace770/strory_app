@@ -4,12 +4,21 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import '../provider/location_provider.dart';
 import '../provider/upload_provider.dart';
 
 class UploadPage extends StatefulWidget {
   final Function() onAddAction;
+  final Function() onMap;
+  final double latitude;
+  final double longitude;
 
-  const UploadPage({super.key, required this.onAddAction});
+  const UploadPage({
+    super.key, required this.onAddAction,
+    required this.onMap,
+    required this.latitude,
+    required this.longitude,
+  });
 
   @override
   State<UploadPage> createState() => _UploadPageState();
@@ -17,6 +26,7 @@ class UploadPage extends StatefulWidget {
 
 class _UploadPageState extends State<UploadPage> {
   final descriptionController = TextEditingController();
+  final addressController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -100,6 +110,64 @@ class _UploadPageState extends State<UploadPage> {
             const SizedBox(
               height: 10,
             ),
+            Consumer<LocationProvider>(
+              builder: (context, provider, child) {
+                if (provider.selectedLocation != null) {
+                  WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+                    addressController.text =
+                        provider.selectedLocation.toString();
+                  });
+                } else {
+                  debugPrint(addressController.text);
+                }
+                return Container(
+                  margin: const EdgeInsets.only(left: 20, right: 20),
+                  child: TextFormField(
+                    readOnly: true,
+                    decoration: InputDecoration(
+                      hintText: 'Address',
+                      hintStyle: const TextStyle(color: Colors.grey),
+                      fillColor: Colors.transparent,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: Colors.black, width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: Colors.black, width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      disabledBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: Colors.black, width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderSide:
+                        const BorderSide(color: Colors.red, width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderSide: const BorderSide(
+                            color: Colors.black, width: 1.0),
+                        borderRadius: BorderRadius.circular(8.0),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter your location.';
+                      }
+                      return null;
+                    },
+                    controller: addressController,
+                    onTap: () {
+                      widget.onMap();
+                    },
+                  ),
+                );
+              },
+            ),
 
             Expanded(
               child: Row(
@@ -143,6 +211,8 @@ class _UploadPageState extends State<UploadPage> {
       newBytes,
       fileName,
       descriptionController.text,
+      lat: widget.latitude,
+      lon: widget.longitude,
     );
 
     if (uploadProvider.uploadResponse != null) {

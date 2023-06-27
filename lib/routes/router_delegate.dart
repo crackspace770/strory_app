@@ -1,11 +1,12 @@
 
 import 'package:flutter/material.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../data/db/preference.dart';
 import '../data/response/story_response.dart';
 import '../pages/detail_page.dart';
 import '../pages/list_page.dart';
 import '../pages/login_page.dart';
+import '../pages/map_page.dart';
 import '../pages/register_page.dart';
 import '../pages/splash_page.dart';
 import '../pages/upload_page.dart';
@@ -28,20 +29,18 @@ class MyRouterDelegate extends RouterDelegate
   GlobalKey<NavigatorState> get navigatorKey => _navigatorKey;
 
   String? selectedStory;
-
-  /// todo 8: add historyStack variable to maintaining the stack
   List<Page> historyStack = [];
   bool? isLoggedIn;
   bool isRegister = false;
   bool addAction = false;
+  bool addLocation = false;
   ListStory? storyId;
   String? selectedId;
   double? latitude;
   double? longitude;
   bool? isUnknown;
+  bool isMap = false;
 
-  final PagingController<int, StoryResponse> _pagingController =
-  PagingController(firstPageKey: 0);
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +59,10 @@ class MyRouterDelegate extends RouterDelegate
         if (!didPop) {
           return false;
         }
-
+        addLocation = false;
         addAction = false;
         isRegister = false;
+        isMap = false;
         storyId = null;
         notifyListeners();
 
@@ -156,7 +156,7 @@ class MyRouterDelegate extends RouterDelegate
           notifyListeners();
 
         },
-        storyPagingController: _pagingController,
+
       ),
     ),
     if (storyId != null)
@@ -166,17 +166,36 @@ class MyRouterDelegate extends RouterDelegate
            storiesId: storyId,
         ),
       ),
+
     if (addAction == true)
        MaterialPage(
         key: const ValueKey('AddStoryPage'),
         child: UploadPage(
+            latitude: latitude ?? 0.0,
+            longitude: longitude ?? 0.0,
           onAddAction: () {
             addAction = false;
             notifyListeners();
-          }
-
+          },
+        onMap: () {
+          addLocation = true;
+          notifyListeners();
+         },
         ),
       ),
+
+    if (addLocation == true)
+      MaterialPage(
+        key: const ValueKey('AddLocationPage'),
+        child: MapPage(
+          onBackAddStory: (LatLng latLang) {
+            addLocation = false;
+            latitude = latLang.latitude;
+            longitude = latLang.longitude;
+            notifyListeners();
+          },
+        ),
+      )
 
   ];
 }

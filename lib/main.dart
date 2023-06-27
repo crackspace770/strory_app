@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:story_app/provider/auth_provider.dart';
+import 'package:story_app/provider/location_provider.dart';
 import 'package:story_app/provider/story_provider.dart';
 import 'package:story_app/provider/upload_provider.dart';
 import 'package:story_app/routes/router_delegate.dart';
@@ -42,6 +43,8 @@ class _MyAppState extends State<MyApp> {
             create: (context) => StoryProvider(apiService: ApiService(Client()) )
         ),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
+
+        ChangeNotifierProvider(create: (context) => LocationProvider()),
 
       ],
       child: MaterialApp(

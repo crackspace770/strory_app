@@ -7,7 +7,8 @@ import '../data/response/story_response.dart';
 class CardStory extends StatelessWidget{
 
   final ListStory story;
-  const CardStory({super.key, required this.story});
+  final void Function()? onTap;
+  const CardStory({super.key, required this.story,this.onTap });
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +67,13 @@ class CardStory extends StatelessWidget{
                 overflow: TextOverflow.ellipsis,
               ),
             ),
+
+
           ],
         ),
+
       ),
+
     );
   }
 
